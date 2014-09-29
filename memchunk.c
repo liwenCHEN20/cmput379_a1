@@ -24,20 +24,16 @@ void segv_handler( int sig )
 
 int get_mem_layout( struct memchunk *chunk_list, int size )
 {
-	int page_size;
-	page_size = sysconf(_SC_PAGESIZE);
+	int page_size = sysconf( _SC_PAGESIZE );
 
 	/* Use char* so we can do pointer arithmetic */
 	char* current_ptr = (char*) 0;
 	char* last_ptr = (char*) 0;
 
-	/* Set to -2 so the first page is always different */
 	int last_RW = 0;
 	int current_RW = get_RW( current_ptr );
 
 	int chunk_count = 0;
-	int current_chunk = 0;
-
 
 	for( int index = 0; index < size; ++index )
 	{
@@ -50,7 +46,7 @@ int get_mem_layout( struct memchunk *chunk_list, int size )
 		}
 		while( current_RW == last_RW );
 
-		/* check for overflow */
+		/* check for rolling back to 0 */
 		if( (unsigned long) current_ptr < (unsigned long) last_ptr )
 		{
 			break;

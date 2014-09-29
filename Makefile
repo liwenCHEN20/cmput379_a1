@@ -3,7 +3,7 @@
 all: dir build/get_mem_layout_test
 
 dir: 
-	mkdir build
+	mkdir -p build
 
 build/get_mem_layout_test: build/test.o build/memchunk.o
 	gcc build/test.o build/memchunk.o -m32 -std=c99 -o build/get_mem_layout_test
