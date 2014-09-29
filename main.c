@@ -1,44 +1,30 @@
+#include "memchunk.h"
 #include <stdio.h>
-#include <signal.h>
-#include <setjmp.h>
-
-struct memchunk
-{
-	void *start;
-	unsigned long length;
-	int RW;
-};
-
-int get_mem_layout( struct memchunk *chuck_list, int size );
-void try_to_segfault();
-
-static jmp_buf env;
-
-static void segv_handler( int signal )
-{
-	printf( "SEGV handled!\n" );
-	longjmp( env, 1 );
-}
+#include <stdlib.h>
 
 int main()
 {
 	printf( "CMPUT 379 Assignment 1\n" );
 
-	(void) signal( SIGSEGV, segv_handler );
+	int n_chunks = 100;
 
-	if( setjmp( env ) != 0 )
+	struct memchunk *chunks = malloc( n_chunks * sizeof( struct memchunk ) );
+
+	int returned_chunks = get_mem_layout( chunks, n_chunks );
+	
+	if( returned_chunks < n_chunks )
 	{
-		printf( "We segfaulted!!\n" );
+		n_chunks = returned_chunks;
 	}
-	else
+	printf( "%i chunks!\n", n_chunks );
+
+	for( int i = 0; i < n_chunks; ++i )
 	{
-		try_to_segfault();
+		printf( "%p: %lu bytes, %i rw status\n", chunks[i].start, chunks[i].length, chunks[i].RW );
 	}
+
+	free( chunks );
+
 	return 0;
 }
 
-void try_to_segfault()
-{
-	char* bad_ptr = (char*) 0;
-	*bad_ptr = 'a';
-}
