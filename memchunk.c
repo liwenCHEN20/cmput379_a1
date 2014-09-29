@@ -35,7 +35,8 @@ int get_mem_layout( struct memchunk *chunk_list, int size )
 
 	int chunk_count = 0;
 
-	for( int index = 0; index < size; ++index )
+	/* exit loop once we overflow back to 0 */
+	while( (unsigned long) current_ptr >= (unsigned long) last_ptr )
 	{
 		last_ptr = current_ptr;
 		last_RW = current_RW;
@@ -46,15 +47,12 @@ int get_mem_layout( struct memchunk *chunk_list, int size )
 		}
 		while( current_RW == last_RW );
 
-		/* check for rolling back to 0 */
-		if( (unsigned long) current_ptr < (unsigned long) last_ptr )
+		if( chunk_count < size )
 		{
-			break;
+			chunk_list[chunk_count].start = (void*) last_ptr;
+			chunk_list[chunk_count].length = (unsigned long) current_ptr - (unsigned long) last_ptr;
+			chunk_list[chunk_count].RW = last_RW;
 		}
-
-		chunk_list[index].start = (void*) last_ptr;
-		chunk_list[index].length = (unsigned long) current_ptr - (unsigned long) last_ptr;
-		chunk_list[index].RW = last_RW;
 		++chunk_count;
 	}
 	return chunk_count;

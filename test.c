@@ -6,17 +6,13 @@ int main()
 {
 	printf( "CMPUT 379 Assignment 1\n" );
 
-	int n_chunks = 100;
+	int n_chunks = 10;
 
 	struct memchunk *chunks = malloc( n_chunks * sizeof( struct memchunk ) );
 
 	int returned_chunks = get_mem_layout( chunks, n_chunks );
-	
-	if( returned_chunks < n_chunks )
-	{
-		n_chunks = returned_chunks;
-	}
-	printf( "%i chunks!\n", n_chunks );
+
+	printf( "%i chunks!\n", returned_chunks );
 
 	for( int i = 0; i < n_chunks; ++i )
 	{
