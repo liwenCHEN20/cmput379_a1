@@ -9,6 +9,10 @@
 
 static jmp_buf env;
 
+/* These are declared here instead of the header
+ * because they use the global variable env, so
+ * not allowing other code to use them is safer.
+ */
 int get_RW( char* ptr );
 bool address_readable( char* ptr );
 bool address_writable( char* ptr );
@@ -60,6 +64,16 @@ int get_mem_layout( struct memchunk *chunk_list, int size )
 	return chunk_count;
 }
 
+/**
+ * Gets the RW status of the memory at ptr.
+ *
+ *  1: Readable and writable
+ *  0: Read-only
+ * -1: Inaccessible
+ *
+ * @param[in] ptr The memory location to check.
+ * @return A number corresponding to one of the state above.
+ */
 int get_RW( char* ptr )
 {
 	if( address_readable( ptr ) )
@@ -79,28 +93,56 @@ int get_RW( char* ptr )
 	}
 }
 
+/**
+ * Determines if the memory is readable
+ *
+ * @param[in] ptr The memory location to check.
+ * @return True if the memory is readable, false otherwise.
+ */
 bool address_readable( char* ptr )
 {
 	(void) signal( SIGSEGV, segv_handler );
 	char test;
+
+	/* Return false if we segfault */
 	if( setjmp( env ) == 1 )
 	{
 		return false;
 	}
+
+	/* Attempt to read the memory */
 	test = *ptr;
+
+	/* Return true if we don't segfault */
 	return true;
 }
 
+/**
+ * Determines if the memory is writable
+ *
+ * Writes the same value that was read to avoid changing
+ * values.
+ *
+ * @param[in] ptr The memory location to check.
+ * @return True if the memory is writable, false otherwise.
+ */
 bool address_writable( char* ptr )
 {
 	(void) signal( SIGSEGV, segv_handler );
 	char test;
+
+	/* Return false if we segfault */
 	if( setjmp( env ) == 1 )
 	{
 		return false;
 	}
+
+	/* Attempt to read the memory, and write
+		the same value back */
 	test = *ptr;
 	*ptr = test;
+
+	/* Return true if we don't segfault */
 	return true;
 }
 
